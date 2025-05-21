@@ -115,12 +115,12 @@ const Searchform = () => {
   )
 }
 
-const Search = () => {
+const Login = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <Searchform />
+      <LoginContent />
     </Suspense>
   );
 };
 
-export default Search;
+export default Login;

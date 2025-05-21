@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ResetPassword() {
+const ResetPasswordform=()=> {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -81,3 +81,12 @@ export default function ResetPassword() {
       </section>
   );
 }
+const ResetPassword = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordform />
+    </Suspense>
+  );
+};
+
+export default ResetPassword;

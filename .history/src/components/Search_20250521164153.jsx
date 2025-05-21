@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from 'next/link';
 import { useShoppingCart } from 'use-shopping-cart';
-const Searchform = () => {
+const Search = () => {
       const { addItem } = useShoppingCart()
     
       const [products, setProducts] = useState([]);
@@ -115,12 +115,4 @@ const Searchform = () => {
   )
 }
 
-const Search = () => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Searchform />
-    </Suspense>
-  );
-};
-
-export default Search;
+export default Search
