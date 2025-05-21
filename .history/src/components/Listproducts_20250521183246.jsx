@@ -41,6 +41,7 @@ const Listproducts = ({products}) => {
           throw new Error(`Failed to delete product with slug ${productslug}`);
         }
     
+        console.log('product deleted successfully');
     
         setProductsdata((prevproducts) =>
           prevproducts.filter((product) => product.slug !== productslug)

@@ -44,6 +44,7 @@ const Listcategories = ({categories}) => {
       throw new Error(`Failed to delete category with slug ${categoryslug}`);
     }
 
+    console.log('Category deleted successfully');
 
     setCategoriessdata((prevcategories) =>
       prevcategories.filter((category) => category.slug !== categoryslug)

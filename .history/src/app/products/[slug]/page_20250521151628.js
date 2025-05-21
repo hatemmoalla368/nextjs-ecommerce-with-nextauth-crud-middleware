@@ -28,6 +28,7 @@ const fetchproduct = async (productslug) => {
 const page = async({params}) => {
     const productslug =  params.slug
     const product = await fetchproduct(productslug)
+     console.log('product', product)
      const relatedProducts = await prisma.product.findMany({
     where: {
       categoryId: product.categoryId,

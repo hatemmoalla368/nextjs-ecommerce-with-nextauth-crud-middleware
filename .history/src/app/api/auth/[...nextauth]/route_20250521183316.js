@@ -21,6 +21,7 @@ export const authOptions = {
             throw new Error("Please enter both email and password");
           }
 
+          console.log('Attempting to query user with email:', credentials.email);
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
           });

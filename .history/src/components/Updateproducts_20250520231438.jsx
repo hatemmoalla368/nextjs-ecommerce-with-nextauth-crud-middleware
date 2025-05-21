@@ -21,7 +21,7 @@ const generateSlug = (text) =>
   text.toLowerCase().trim().replace(/[\s\W-]+/g, '-');
 
 const Updateproducts = ({categories,product}) => {
-    
+    console.log('product details before', product)
     const [files, setFiles] = useState([]); 
 
       const { data: session, status } = useSession();

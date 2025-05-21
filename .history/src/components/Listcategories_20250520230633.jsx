@@ -33,6 +33,7 @@ const Listcategories = ({categories}) => {
     
 
   const deletecategory = async (categoryslug) => {
+      console.log('Deleting slug:', categoryslug); // Verify this shows correct slug
 
   try {
 
@@ -44,6 +45,7 @@ const Listcategories = ({categories}) => {
       throw new Error(`Failed to delete category with slug ${categoryslug}`);
     }
 
+    console.log('Category deleted successfully');
 
     setCategoriessdata((prevcategories) =>
       prevcategories.filter((category) => category.slug !== categoryslug)

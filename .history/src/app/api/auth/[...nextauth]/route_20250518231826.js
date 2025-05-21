@@ -21,6 +21,7 @@ export const authOptions = {
             throw new Error("Please enter both email and password");
           }
 
+          console.log('Attempting to query user with email:', credentials.email);
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
           });
@@ -80,6 +81,7 @@ if (!user.isActive) {
       return token;
     },
     async session({ session, token }) {
+      console.log('Session callback:', { session, token });
       // Always return a session object, even if token is invalid
       if (token) {
         session.user = {
