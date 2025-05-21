@@ -127,7 +127,7 @@ export default function AdminOrders() {
         ),
       },
     ],
-    [session, handleStatusChange]
+    [session]
   );
 
   const table = useReactTable({

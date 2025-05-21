@@ -14,20 +14,23 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 
-const OrderStatus = {
-  PENDING: 'PENDING',
-  PROCESSING: 'PROCESSING',
-  SHIPPED: 'SHIPPED',
-  DELIVERED: 'DELIVERED',
-  CANCELLED: 'CANCELLED'
+const Role = {
+  ADMIN: 'ADMIN',
+  CUSTOMER: 'CUSTOMER',
+  
+};
+const isActive = {
+  true: 'true',
+  false: 'false',
+  
 };
 
-export default function AdminOrders() {
+export default function AdminUsers() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [orders, setOrders] = useState([]);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+ 
   const [loading, setLoading] = useState(true);
   const [globalFilter, setGlobalFilter] = useState('');
 
@@ -41,97 +44,184 @@ export default function AdminOrders() {
 
   useEffect(() => {
     if (session?.user.role === 'ADMIN') {
-      fetchOrders();
+      fetchUsers();
     }
   }, [session]);
 
-  const fetchOrders = async () => {
+  const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/allorders');
+      const res = await fetch('/api/users');
       const data = await res.json();
-      setOrders(data);
+      setUsers(data);
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStatusChange = async (orderId, newStatus) => {
-    try {
-      await fetch(`/api/allorders/${orderId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      fetchOrders();
-    } catch (error) {
-      console.error('Error updating order:', error);
+  
+
+  const handleRoleChange = async (userId, newRole) => {
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ role: newRole }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update user role');
     }
-  };
+    
+    fetchUsers();
+  } catch (error) {
+    console.error('Error updating user role:', error);
+  }
+};
+  
+    const handleActiveChange = async (userId, newStatus) => {
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        isActive: newStatus === 'true' 
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update user status');
+    }
+    
+    fetchUsers();
+  } catch (error) {
+    console.error('Error updating user status:', error);
+  }
+};
 
   const columns = useMemo(
     () => [
       {
         accessorKey: 'id',
-        header: 'Order ID',
+        header: 'User ID',
         cell: info => info.getValue().substring(0, 8) + '...',
       },
       {
-        accessorKey: 'user.email',
-        header: 'Customer Email',
+        accessorKey: 'email',
+        header: 'user Email',
       },
       {
-        accessorKey: 'total',
-        header: 'Total',
-        cell: info => `$${info.getValue()}`,
+        accessorKey: 'firstName',
+        header: 'user first name',
       },
       {
-        accessorKey: 'status',
-        header: 'Status',
-        cell: ({ row, getValue }) => (
-          <Form.Select
-            value={getValue()}
-            onChange={(e) => handleStatusChange(row.original.id, e.target.value)}
-            disabled={session?.user.role !== 'ADMIN'}
-          >
-            {Object.values(OrderStatus).map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </Form.Select>
-        ),
+        accessorKey: 'lastName',
+        header: 'user last name',
       },
+      {
+        accessorKey: 'address',
+        header: 'user address ',
+      },
+      {
+        accessorKey: 'phoneNumber',
+        header: 'user phone Number',
+      },
+      
+      
+      {
+  accessorKey: 'role',
+  header: 'Role',
+  cell: ({ row, getValue }) => {
+    const [isUpdating, setIsUpdating] = useState(false);
+    const isCurrentUser = row.original.id === session?.user.id;
+    
+    const handleChange = async (e) => {
+      setIsUpdating(true);
+      try {
+        await handleRoleChange(row.original.id, e.target.value);
+      } finally {
+        setIsUpdating(false);
+      }
+    };
+
+    return (
+      <div className="d-flex align-items-center">
+        {isUpdating && (
+          <span className="spinner-border spinner-border-sm me-2" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </span>
+        )}
+        <Form.Select
+          value={getValue()}
+          onChange={handleChange}
+          disabled={session?.user.role !== 'ADMIN' || isCurrentUser || isUpdating}
+          size="sm"
+        >
+          {Object.values(Role).map((role) => (
+            <option key={role} value={role}>
+              {role}
+            </option>
+          ))}
+        </Form.Select>
+      </div>
+    );
+  },
+},
+       {
+  accessorKey: 'isActive',
+  header: 'Status',
+  cell: ({ row, getValue }) => {
+    const [isUpdating, setIsUpdating] = useState(false);
+    const isCurrentUser = row.original.id === session?.user.id;
+    
+    const handleChange = async (e) => {
+      setIsUpdating(true);
+      try {
+        await handleActiveChange(row.original.id, e.target.value);
+      } finally {
+        setIsUpdating(false);
+      }
+    };
+
+    return (
+      <div className="d-flex align-items-center">
+        {isUpdating && (
+          <span className="spinner-border spinner-border-sm me-2" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </span>
+        )}
+        <Form.Select
+          value={getValue() ? 'true' : 'false'}
+          onChange={handleChange}
+          disabled={session?.user.role !== 'ADMIN' || isCurrentUser || isUpdating}
+          size="sm"
+        >
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </Form.Select>
+      </div>
+    );
+  },
+},
       {
         accessorKey: 'createdAt',
         header: 'Date',
         cell: info => new Date(info.getValue()).toLocaleDateString(),
       },
-      {
-        id: 'actions',
-        header: 'Actions',
-        cell: ({ row }) => (
-          <Button
-            variant="info"
-            size="sm"
-            onClick={() => {
-              setSelectedOrder(row.original);
-              setShowModal(true);
-            }}
-          >
-            View Items
-          </Button>
-        ),
-      },
+      
+      
     ],
-    [session, handleStatusChange]
+    [session]
   );
 
   const table = useReactTable({
-    data: orders,
+    data: users,
     columns,
     state: {
       globalFilter,
@@ -162,7 +252,7 @@ export default function AdminOrders() {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">Order Management</h2>
+      <h2 className="mb-4">users Management</h2>
       
       {/* Global Search Only */}
       <div className="mb-4">
@@ -172,7 +262,7 @@ export default function AdminOrders() {
           </InputGroup.Text>
           <Form.Control
             type="text"
-            placeholder="Search orders..."
+            placeholder="Search users..."
             value={globalFilter ?? ''}
             onChange={e => setGlobalFilter(e.target.value)}
           />
@@ -256,61 +346,7 @@ export default function AdminOrders() {
       </div>
 
       {/* Order details modal remains the same */}
-         <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-  <Modal.Header closeButton>
-    <Modal.Title>Order #{selectedOrder?.id?.substring(0, 8)}</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    {selectedOrder && (
-      <>
-        <div className="mb-4">
-          <h5>Customer Information</h5>
-          <p><strong>Name:</strong> {selectedOrder.user?.firstName} {selectedOrder.user?.lastName}</p>
-          <p><strong>Email:</strong> {selectedOrder.user?.email}</p>
-                    <p><strong>Address:</strong> {selectedOrder.user?.address}</p>
-          <p><strong>PhoneNumber:</strong> {selectedOrder.user?.phoneNumber}</p>
-
-          <p><strong>Order Total:</strong> ${selectedOrder.total}</p>
-          <p><strong>Status:</strong> {selectedOrder.status}</p>
-          <p><strong>Date:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
-        </div>
-
-        <h5 className="mb-3">Order Items</h5>
-        {selectedOrder.items?.length > 0 ? (
-          <div className="table-responsive">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                  <th>Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedOrder.items.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.product?.name || 'N/A'}</td>
-                    <td>{item.quantity}</td>
-                    <td>${item.price}</td>
-                    <td>${(item.price * item.quantity).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p>No items found in this order</p>
-        )}
-      </>
-    )}
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={() => setShowModal(false)}>
-      Close
-    </Button>
-  </Modal.Footer>
-</Modal>
+         
     </div>
   );
 }
