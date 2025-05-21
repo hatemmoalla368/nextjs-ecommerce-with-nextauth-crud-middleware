@@ -1,0 +1,112 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  firstName    String
+  lastName     String
+  password     String
+  address      String?   // Optional field
+  phoneNumber  String?  
+  role         Role      @default(CUSTOMER)
+  isActive        Boolean   @default(false)
+  activationToken String?   // No expiry needed
+  resetToken       String?   // Token for password reset
+  resetTokenExpiry DateTime? // Expiry (e.g., 1 hour)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  orders       Order[]
+  cartItems    CartItem[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id           String     @id @default(uuid())
+  name         String
+  slug         String     @unique
+  description  String?
+  price        Decimal
+  stock        Int
+  images       String
+  totalOrders  Int        @default(0) // 👈 Add this line
+  category     Category   @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  orders       OrderItem[]
+  cartItems    CartItem[]  // Add this line to complete the relationship
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("products")
+}
+
+model Order {
+  id           String     @id @default(uuid())
+  user         User       @relation(fields: [userId], references: [id])
+  userId       String
+  items        OrderItem[]
+  total        Decimal
+  status       OrderStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String    @id @default(uuid())
+  order      Order     @relation(fields: [orderId], references: [id])
+  orderId    String
+  product    Product   @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int
+  price      Decimal
+  createdAt  DateTime  @default(now())
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@map("cart_items")
+}
