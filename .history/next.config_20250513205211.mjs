@@ -2,8 +2,6 @@
 const nextConfig = {
   experimental: {
     turbopack: false,
-        missingSuspenseWithCSRBailout: false,
-
   },
 };
 
